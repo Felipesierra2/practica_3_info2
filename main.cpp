@@ -1,25 +1,22 @@
+// main.cpp
 #include <iostream>
 #include "auxiliares.h"
-#include "codificar.h"
-#include "codificar.h"
-#include "decodificar.h"
 
-using namespace std;
+// main muy limpio: solo orquesta
+int main(int nombreP, char** arc) {
+    const std::string archivo = (nombreP >= 2) ? arc[1] : "prueba1.txt";
+    std::string datos;
 
-int main() {
-    cout << "=== Programa de Codificacion y Decodifiacion===" << endl;
-    int opcion = validarEntrada("Ingrese 1 para codificar o 2 para decodificar: ");
-
-    if (opcion == 1) {
-        codificarMetodo1();
-    }
-    else if (opcion == 2) {
-        decodificar();
-    }
-    else {
-        cout << "Opción no válida." << endl;
+    // aquí solo llamamos y validamos si falla
+    if (!leerArchivo(archivo, datos, true)) {
+        std::cerr << "Error leyendo archivo: " << archivo << "\n";
+        return 1;
     }
 
+    // Ahora 'datos' contiene todos los bytes leídos y puedes pasarlo a codificar/decodificar
+    std::cout << "Tamaño leído: " << datos.size() << " bytes\n";
+
+    // ejemplo mínimo: llamar a codificar(datos); (implementa en otro módulo)
     return 0;
 }
 
