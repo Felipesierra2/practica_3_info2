@@ -3,15 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <cctype>
-#include <iomanip>
-
-
-static std::string byteToBits(unsigned char c) {
-    std::string s;
-    s.reserve(8);
-    for (int i = 7; i >= 0; --i) s.push_back(((c >> i) & 1) ? '1' : '0');
-    return s;
-}
+#include <limits>
 
 bool leerArchivo(const std::string &ruta, std::string &salida, bool mostrar) {
     std::ifstream archivo(ruta, std::ios::binary);
@@ -35,14 +27,27 @@ bool leerArchivo(const std::string &ruta, std::string &salida, bool mostrar) {
             return false;
         }
     }
-
-    std::cout << "Fin de la vista" << std::endl;
-
     return true;
 }
 
 
+int validarEntrada(const std::string& mensaje) {
+    int num;
 
+    while (true) {
+        std::cout << mensaje;
+        std::cin >> num;
+
+        if (std::cin.fail() || num <= 0) {
+            std::cout << "Error:Ingrese un valor entero mayor a 0. Intente nuevamente.\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        } else {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return num;
+        }
+    }
+}
 
 
 
