@@ -23,11 +23,14 @@ int main(int nombreP, char** arc) {
     if (opcion == 1) {
         int semilla = validarEntrada("Ingrese el tamano de la semilla: ");
         int metodo = validarEntrada("Ingrese el metodo a codificar: ");
+        std::string archivoSalida;
+        if (archivoSalida.empty()) archivoSalida = "salida.bin";
+
         if (metodo == 1){
-            codificarMetodo1(datos, semilla);
+            codificarMetodo1(datos, semilla,archivoSalida);
         }
         else if(metodo == 2)
-            codificarMetodo2(datos, semilla);
+            codificarMetodo2(datos, semilla,archivoSalida);
         else
             std::cout << "Error: Intentelo nuevamente. " << std::endl;
     }

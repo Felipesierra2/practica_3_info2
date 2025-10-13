@@ -1,6 +1,7 @@
 #include "codificar.h"
 #include <bitset>
 #include <iostream>
+#include <fstream>
 
 static std::string concatenarBytes(const std::string& datos){
     std::string bits;
@@ -46,6 +47,18 @@ static std::string invertirCadaN(const std::string& bits, int n){
     return salida;
 }
 
+static std::string desplazarBloques(const std::string& bitsBloque){
+    std::string salida = bitsBloque;
+    if (bitsBloque.empty()) return salida;
+
+    salida[0] = bitsBloque[bitsBloque.size() - 1];
+
+    for (size_t i = 1; i < bitsBloque.size(); i++){
+        salida[i] = bitsBloque[i-1];
+    }
+    return salida;
+}
+
 static std::string codificarBloques(const std::string& bits, int semilla){
     size_t totalBloques = bits.size() / semilla;
     std::string resultado;
@@ -78,32 +91,111 @@ static std::string codificarBloques(const std::string& bits, int semilla){
     return resultado;
 }
 
+static std::string codificarBloqMetodo2(const std::string& bits, int semilla){
+    size_t totalBloques = bits.size() / semilla;
+    std::string resultado;
+    resultado.reserve(bits.size());
 
-void codificarMetodo1(const std::string &datos, int semilla) {
+    for (size_t i = 0; i < totalBloques; i++){
+        size_t inicio = i * semilla;
+        std::string bloque = bits.substr(inicio,semilla);
+
+        resultado += desplazarBloques(bloque);
+    }
+
+    return resultado;
+}
+
+static bool escribirBinarios(const std:: string& bits, const std::string& archivoExit){
+    if (bits.empty()) {
+        std::cerr << "guardarBinario: bits vacios\n";
+        return false;
+    }
+    if (bits.size() % 8 != 0) {
+        std::cerr << "guardarBinario: error - la cadena no es multiplo de 8\n";
+        return false;
+    }
+
+    std::string buffer;
+    buffer.reserve(bits.size() / 8);
+
+    for (size_t i = 0; i < bits.size(); i+= 8){
+        unsigned char byte = 0;
+        for (size_t j = 0; j < 8; j++){
+            char bit = bits[i + j];
+            byte = (byte << 1) | (bit == '1' ? 1u:0u);
+        }
+        buffer.push_back(static_cast<char>(byte));
+    }
+
+    std::ofstream exit(archivoExit, std::ios::binary);
+
+    if(!exit){
+        std::cerr << "No se pudo abrir: " << archivoExit << std::endl;
+        return false;
+    }
+    exit.write(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+    exit.close();
+    return true;
+}
+
+
+
+
+//=====================Funciones principales================================
+
+void codificarMetodo1(const std::string &datos, int semilla, const std::string &archivoExit) {
     if (semilla <= 0) {
-        std::cerr << "Semilla inválida\n";
+        std::cerr << "Semilla invalida\n";
         return;
     }
     std::string bits8 = concatenarBytes(datos);
 
     if (bits8.empty()) {
-        std::cerr << "Archivo vacío: nada que codificar\n";
+        std::cerr << "Archivo vacio: nada que codificar\n";
         return;
     }
     std::string completos = completarBits(bits8, semilla);
 
     if (completos.size() % semilla != 0) {
-        std::cerr << "Advertencia: padding incorrecto: "
-                  << completos.size() << " % " << semilla << " != 0\n";
+        std::cerr << "Error: "<< completos.size() << " % " << semilla << " != 0\n";
     }
     std::string codificado = codificarBloques(completos, semilla);
 
-    if (codificado.size() < 300) std::cout << codificado << '\n';
-    else std::cout << codificado.substr(0,300) << "\n...(truncado)\n";
+    if(!escribirBinarios(codificado,archivoExit)){
+        std::cerr << "Error al escribir el archivo" << std::endl;
+    }else{
+        std::cout << "Salida escrita en binario: " << archivoExit << codificado.size() << " bits antes del padding" <<std::endl;
+    }
 }
 
+void codificarMetodo2(const std::string &datos, int semilla,const std::string &archivoExit){
+    if (semilla <= 0) {
+        std::cerr << "Semilla invalida\n";
+        return;
+    }
+    std::string bits8 = concatenarBytes(datos);
 
-void codificarMetodo2(const std::string &datos, int semilla){
-    std::cout << "Ejecutando metodo 2" << std::endl;
+    if (bits8.empty()) {
+        std::cerr << "Archivo vacio: nada que codificar\n";
+        return;
+    }
+    std::string completos = completarBits(bits8, semilla);
+
+    if (completos.size() % semilla != 0) {
+        // error lógico: completarBits debe garantizar que esto no ocurra
+        std::cerr << "Error: padding no aplicado correctamente\n";
+        return;
+    }
+    std::string codificad2 = codificarBloqMetodo2(completos,semilla);
+
+    std::string cod = codificad2;
+    std::ofstream out(codificad2, std::ios::binary);
+
+    if(!escribirBinarios(codificad2,archivoExit)){
+        std::cerr << "Error al escribir el archivo" << std::endl;
+    }else{
+        std::cout << "Salida escrita en binario: " << archivoExit << " " << codificad2.size() << " bits antes del padding" <<std::endl;
+    }
 }
 
