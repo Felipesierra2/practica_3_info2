@@ -1,5 +1,6 @@
 #include "codificar.h"
 #include <bitset>
+#include <cstdint>
 #include <iostream>
 #include <fstream>
 
@@ -38,13 +39,16 @@ static std::string invertirLosBits(const std::string& bloques){
     return invertirTodos;
 }
 
-static std::string invertirCadaN(const std::string& bits, int n){
-    std::string salida = bits;
-    if (n <= 0) return salida;
-    for (int i = n - 1; i < (int)salida.size(); i+=n){
-        salida[i] = (salida[i] == '0') ? '1':'0';
+static std::string invertirCadaN(const std::string& bits, int grupo) {
+    std::string result = bits;
+    if (grupo <= 0) return result;
+    for (int i = 0; i < (int)bits.size(); i += grupo) {
+        // invertimos el bloque [i .. i+grupo-1] (si alcanza)
+        for (int j = 0; j < grupo && (i + j) < (int)bits.size(); ++j) {
+            result[i + j] = (bits[i + j] == '0') ? '1' : '0';
+        }
     }
-    return salida;
+    return result;
 }
 
 static std::string desplazarBloques(const std::string& bitsBloque){
@@ -106,16 +110,24 @@ static std::string codificarBloqMetodo2(const std::string& bits, int semilla){
     return resultado;
 }
 
-static bool escribirBinarios(const std:: string& bits, const std::string& archivoExit){
+static bool escribirBinarios(const std:: string& bits, const std::string& archivoExit, uint64_t tamOriginal){
     if (bits.empty()) {
         std::cerr << "guardarBinario: bits vacios\n";
         return false;
     }
+
     if (bits.size() % 8 != 0) {
         std::cerr << "guardarBinario: error - la cadena no es multiplo de 8\n";
         return false;
     }
 
+    std::ofstream exit(archivoExit, std::ios::binary);
+    if(!exit){
+        std::cerr << "No se pudo abrir: " << archivoExit << std::endl;
+        return false;
+    }
+
+    exit.write(reinterpret_cast<const char*>(&tamOriginal), sizeof(tamOriginal));
     std::string buffer;
     buffer.reserve(bits.size() / 8);
 
@@ -128,12 +140,6 @@ static bool escribirBinarios(const std:: string& bits, const std::string& archiv
         buffer.push_back(static_cast<char>(byte));
     }
 
-    std::ofstream exit(archivoExit, std::ios::binary);
-
-    if(!exit){
-        std::cerr << "No se pudo abrir: " << archivoExit << std::endl;
-        return false;
-    }
     exit.write(buffer.data(), static_cast<std::streamsize>(buffer.size()));
     exit.close();
     return true;
@@ -162,10 +168,24 @@ void codificarMetodo1(const std::string &datos, int semilla, const std::string &
     }
     std::string codificado = codificarBloques(completos, semilla);
 
-    if(!escribirBinarios(codificado,archivoExit)){
+    auto padA8 = [](const std::string &s)->std::string {
+        size_t resto = s.size() % 8;
+        if (resto == 0) return s;
+        size_t faltan = 8 - resto;
+        std::string r = s;
+        r.append(faltan, '0');
+        return r;
+    };
+
+    std::string codificad8bits = padA8(codificado);
+
+    if(!escribirBinarios(codificad8bits,archivoExit, bits8.size())){
         std::cerr << "Error al escribir el archivo" << std::endl;
-    }else{
-        std::cout << "Salida escrita en binario: " << archivoExit << codificado.size() << " bits antes del padding" <<std::endl;
+    }else {
+        std::cout << "Salida escrita en binario: " << archivoExit
+                  << " (original_bits=" << bits8.size()
+                  << ", payload_bits=" << codificad8bits.size()
+                  << ", payload_bytes=" << codificad8bits.size()/8 << ")\n";
     }
 }
 
@@ -189,13 +209,24 @@ void codificarMetodo2(const std::string &datos, int semilla,const std::string &a
     }
     std::string codificad2 = codificarBloqMetodo2(completos,semilla);
 
-    std::string cod = codificad2;
-    std::ofstream out(codificad2, std::ios::binary);
+    auto padA8 = [](const std::string &s)->std::string {
+        size_t resto = s.size() % 8;
+        if (resto == 0) return s;
+        size_t faltan = 8 - resto;
+        std::string r = s;
+        r.append(faltan, '0');
+        return r;
+    };
 
-    if(!escribirBinarios(codificad2,archivoExit)){
+    std::string codificad8bits = padA8(codificad2);
+
+    if(!escribirBinarios(codificad8bits,archivoExit,bits8.size())){
         std::cerr << "Error al escribir el archivo" << std::endl;
-    }else{
-        std::cout << "Salida escrita en binario: " << archivoExit << " " << codificad2.size() << " bits antes del padding" <<std::endl;
+    }else {
+        std::cout << "Salida escrita en binario: " << archivoExit
+                  << " (original_bits=" << bits8.size()
+                  << ", payload_bits=" << codificad8bits.size()
+                  << ", payload_bytes=" << codificad8bits.size()/8 << ")\n";
     }
 }
 
