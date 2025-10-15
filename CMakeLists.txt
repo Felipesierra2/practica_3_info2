@@ -8,7 +8,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(practica_3_info_2 main.cpp
     codificar.h codificar.cpp
     auxiliares.h auxiliares.cpp
-    decodificar.h decodificar.cpp)
+    decodificar.h decodificar.cpp
+    menucliente.h menucliente.cpp
+
+    administrador.h administrador.cpp
+    login.h login.cpp
+    limpiarartemporales.h limpiarartemporales.cpp)
 
 include(GNUInstallDirs)
 install(TARGETS practica_3_info_2
