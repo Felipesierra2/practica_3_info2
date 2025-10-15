@@ -1,5 +1,5 @@
 #include "limpiarartemporales.h"
-// limpieza.cpp
+
 #include <iostream>
 #include <cstdio>
 

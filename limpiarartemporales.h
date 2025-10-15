@@ -1,10 +1,6 @@
 #ifndef LIMPIARARTEMPORALES_H
 #define LIMPIARARTEMPORALES_H
 
-class limpiarArTemporales
-{
-public:
-    limpiarArTemporales();
-};
+void limpiarTemporales();
 
 #endif // LIMPIARARTEMPORALES_H
