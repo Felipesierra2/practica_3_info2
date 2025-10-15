@@ -83,6 +83,7 @@ void menuCliente(const std::string& cedula, int semilla, int metodo){
             codificarMetodo1(datosActualizados, semilla, "clientes.txt");
         else if (metodo == 2)
             codificarMetodo2(datosActualizados, semilla, "clientes.txt");
+
     } while (opcion != 3);
 }
 

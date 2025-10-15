@@ -12,7 +12,6 @@ bool leerArchivo(const std::string &ruta, std::string &salida, bool mostrar) {
         return false;
     }
 
-    // calcular tamaño
     archivo.seekg(0, std::ios::end);
     std::streampos tam = archivo.tellg();
     if (tam < 0) tam = 0;

@@ -43,7 +43,7 @@ static std::string invertirCadaN(const std::string& bits, int grupo) {
     std::string result = bits;
     if (grupo <= 0) return result;
     for (int i = 0; i < (int)bits.size(); i += grupo) {
-        // invertimos el bloque [i .. i+grupo-1] (si alcanza)
+
         for (int j = 0; j < grupo && (i + j) < (int)bits.size(); ++j) {
             result[i + j] = (bits[i + j] == '0') ? '1' : '0';
         }
@@ -110,14 +110,16 @@ static std::string codificarBloqMetodo2(const std::string& bits, int semilla){
     return resultado;
 }
 
-static bool escribirBinarios(const std:: string& bits, const std::string& archivoExit, uint64_t tamOriginal){
+static bool escribirBinarios(const std:: string& bits,
+                             const std::string& archivoExit,
+                             uint64_t tamOriginal){
     if (bits.empty()) {
-        std::cerr << "guardarBinario: bits vacios\n";
+        std::cerr << "escribirBinario: bits vacios\n";
         return false;
     }
 
     if (bits.size() % 8 != 0) {
-        std::cerr << "guardarBinario: error - la cadena no es multiplo de 8\n";
+        std::cerr << "escribirBinario: error - la cadena no es multiplo de 8\n";
         return false;
     }
 
@@ -181,11 +183,6 @@ void codificarMetodo1(const std::string &datos, int semilla, const std::string &
 
     if(!escribirBinarios(codificad8bits,archivoExit, bits8.size())){
         std::cerr << "Error al escribir el archivo" << std::endl;
-    }else {
-        std::cout << "Salida escrita en binario: " << archivoExit
-                  << " (original_bits=" << bits8.size()
-                  << ", payload_bits=" << codificad8bits.size()
-                  << ", payload_bytes=" << codificad8bits.size()/8 << ")\n";
     }
 }
 
@@ -203,7 +200,6 @@ void codificarMetodo2(const std::string &datos, int semilla,const std::string &a
     std::string completos = completarBits(bits8, semilla);
 
     if (completos.size() % semilla != 0) {
-        // error lógico: completarBits debe garantizar que esto no ocurra
         std::cerr << "Error: padding no aplicado correctamente\n";
         return;
     }
@@ -222,11 +218,6 @@ void codificarMetodo2(const std::string &datos, int semilla,const std::string &a
 
     if(!escribirBinarios(codificad8bits,archivoExit,bits8.size())){
         std::cerr << "Error al escribir el archivo" << std::endl;
-    }else {
-        std::cout << "Salida escrita en binario: " << archivoExit
-                  << " (original_bits=" << bits8.size()
-                  << ", payload_bits=" << codificad8bits.size()
-                  << ", payload_bytes=" << codificad8bits.size()/8 << ")\n";
     }
 }
 

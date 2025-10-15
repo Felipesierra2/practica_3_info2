@@ -4,49 +4,10 @@
 #include <limits>
 #include <string>
 #include "codificar.h"
-#include "decodificar.h"
 #include "auxiliares.h"
-#include "login.h"
 
 
 //==========================FUNCIONES PRINCIPALES ==================
-void accesoAdmin(int semilla, int metodo){
-    std::string claveIngresada;
-    std::string claveGuardada;
-
-    if (!leerArchivo("sudo.txt", claveGuardada, true)) {
-        std::cerr << "Error: No se encontro el archivo sudo.txt.\n";
-        return;
-    }
-
-    std::cout << "\nIngrese la clave de administrador: ";
-    std::getline(std::cin, claveIngresada);
-
-    std::ofstream temp("temp_admin.txt");
-    temp << claveIngresada;
-    temp.close();
-
-    if (metodo == 1)
-        codificarMetodo1(claveIngresada, semilla, "temp_codificada.txt");
-    else if (metodo == 2)
-        codificarMetodo2(claveIngresada, semilla, "temp_codificada.txt");
-    else {
-        std::cerr << "Metodo de codificacion no valido.\n";
-        return;
-    }
-
-    std::string codificadaIngresada;
-    leerArchivo("temp_codificada.txt", codificadaIngresada, true);
-
-    if (codificadaIngresada == claveGuardada) {
-        std::cout << "\nAcceso concedido al administrador.\n";
-        menuAdmin(semilla, metodo); // <- entra al menú del admin
-    } else {
-        std::cout << "\nClave incorrecta. Acceso denegado.\n";
-    }
-
-}
-
 void menuAdmin(int semilla, int metodo){
     int opcion = 0;
 
@@ -72,34 +33,47 @@ void menuAdmin(int semilla, int metodo){
 
             std::string datos = cedula + ";" + clave + ";" + saldo + "\n";
 
-            std::ofstream tempo("temp_usuario.txt");
+            // Guardar el archivo temporario en texto (opcional, para depuración)
+            std::ofstream tempo("temp_usuario.txt", std::ios::binary);
+            if (!tempo) {
+                std::cerr << "Error: no se pudo crear usuario.txt\n";
+                break;
+            }
             tempo << datos;
             tempo.close();
 
+            // Crear el archivo codificado (se asume que la función lo escribe en disco)
+            const std::string archivoCodificado = "codificado.bin";
             if (metodo == 1)
-                codificarMetodo1(datos, semilla, "temp_codificado.txt");
-            else if(metodo == 2)
-                codificarMetodo2(datos, semilla, "temp_codificado.txt");
+                codificarMetodo1(datos, semilla, archivoCodificado);
+            else if (metodo == 2)
+                codificarMetodo2(datos, semilla, archivoCodificado);
 
-            std::ifstream tempoCodificado("temp_usuario.txt", std::ios::binary);
-            std::string codificada ((std::istreambuf_iterator<char>(tempoCodificado)),
+            // Leer el archivo codificado en binario
+            std::ifstream tempoCodificado(archivoCodificado, std::ios::binary);
+            if (!tempoCodificado) {
+                std::cerr << "Error: no se pudo abrir " << archivoCodificado << " despues de codificar.\n";
+                break;
+            }
+            std::string codificada((std::istreambuf_iterator<char>(tempoCodificado)),
                                    std::istreambuf_iterator<char>());
-
             tempoCodificado.close();
 
+            // Abrir clientes.txt en append binario y escribir los bytes tal cual
             std::ofstream clientes("clientes.txt", std::ios::app | std::ios::binary);
             if (!clientes) {
                 std::cerr << "Error: no se pudo abrir clientes.txt\n";
-                return;
+                break;
             }
 
-            clientes << codificada <<"\n";
+            // Escribir bytes y separar registros con un '\n' si tu decodificador lo espera
+            if (!codificada.empty()) {
+                clientes.write(codificada.data(), static_cast<std::streamsize>(codificada.size()));
+                clientes.put('\n'); // opcional: usa esto si tu decodificador espera líneas separadas
+            }
             clientes.close();
 
-            std::cout << "✅ Usuario registrado exitosamente.\n";
+            std::cout << "Usuario registrado exitosamente.\n";
         }
-
-
-
     }while(opcion !=2);
 }

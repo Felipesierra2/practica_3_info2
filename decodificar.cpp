@@ -7,9 +7,9 @@
 
 bool leerArchivoComoBits(const std::string& codificado, std::string& bits, uint64_t& tamOriginalBits) {
     std::ifstream archivoBinarios(codificado, std::ios::binary);
+    std::cout << "Acá: " << codificado << std::endl;
     if (!archivoBinarios) return false;
 
-    // Leemos el encabezado (uint64_t tamOriginal)
     archivoBinarios.read(reinterpret_cast<char*>(&tamOriginalBits), sizeof(tamOriginalBits));
     if (!archivoBinarios) return false;
 
@@ -56,7 +56,6 @@ std::string invertirCadaN(const std::string& bits, int grupo) {
     std::string result = bits;
     if (grupo <= 0) return result;
     for (int i = 0; i < (int)bits.size(); i += grupo) {
-        // invertimos el bloque [i .. i+grupo-1] (si alcanza)
         for (int j = 0; j < grupo && (i + j) < (int)bits.size(); ++j) {
             result[i + j] = (bits[i + j] == '0') ? '1' : '0';
         }
@@ -69,11 +68,9 @@ std::string decodificarbitsMet1(std::string* bloques, int cantidadBloques, int s
 
     std::string resultado = "";
 
-    // Primer bloque: se invierte completamente
     std::string anteriorDecod = invertirBits(bloques[0]);
     resultado += anteriorDecod;
 
-    // Procesamos desde el bloque 1 en adelante
     for (int i = 1; i < cantidadBloques; ++i) {
         int unos = 0;
         for (int k = 0; k < anteriorDecod.size(); ++k) {
@@ -93,7 +90,7 @@ std::string decodificarbitsMet1(std::string* bloques, int cantidadBloques, int s
         }
 
         resultado += actualDecod;
-        anteriorDecod = actualDecod; // ahora el siguiente bloque usará este
+        anteriorDecod = actualDecod;
     }
 
     return resultado;
@@ -145,26 +142,15 @@ void decodificar(int semilla, int metodo, const std::string& codificado, const s
         return;
     }
 
-    const size_t validarBits = std::min<size_t>(128, bits.size());
-    std::cout << "Bits leidos (preview " << validarBits << "): ";
-    for (size_t i = 0; i < validarBits; ++i) std::cout << bits[i];
-    std::cout << std::endl;
-
     int cantidadBloques = 0;
     std::string* bloques = dividirBloques(bits,semilla,cantidadBloques);
-
-    std::cout << "Cantidad de bloques: " << cantidadBloques << std::endl;
-    std::cout << "Primeros bloques (hasta 5): " << std::endl;
-    for (int i = 0; i < cantidadBloques && i < 5; i++) {
-        std::cout << "Bloque " << i+1 << ": " << bloques[i] << std::endl;
-    }
 
     std::string bitsDecodificados;
     if (metodo == 1) {
         std::cout << "Ejecutando decodificacion por el metodo 1..." << std::endl;
         bitsDecodificados = decodificarbitsMet1(bloques, cantidadBloques, semilla);
     } else if (metodo == 2) {
-        std::cout << "Decodificando con método 2..." << std::endl;
+        std::cout << "Decodificando con metodo 2..." << std::endl;
 
         int cantidadBloques = 0;
         std::string* bloques = dividirBloques(bits, semilla, cantidadBloques);
@@ -183,7 +169,7 @@ void decodificar(int semilla, int metodo, const std::string& codificado, const s
         std::cout << "Archivo decodificado con metodo 2: " << archivoSalida << std::endl;
 
     }else {
-        std::cerr << "Metodo desconocido\n";
+        std::cerr << "Error: Ingres 1 para el metodo 1 o 2 para el metodo 2";
         delete[] bloques;
         return;
     }
@@ -205,7 +191,6 @@ void decodificar(int semilla, int metodo, const std::string& codificado, const s
     exit << textoDecodificado;
     exit.close();
 
-    std::cout << "Archivo decodificado correctamente y guardado en: " << archivoSalida << std::endl;
     delete[] bloques;
 
 

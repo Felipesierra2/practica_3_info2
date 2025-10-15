@@ -7,7 +7,6 @@ void limpiarTemporales() {
     const char* archivos[] = {
         "temp_admin.txt",
         "temp_codificada.txt",
-        "temp_clientes.txt",
         "temp_actualizado.txt"
     };
 

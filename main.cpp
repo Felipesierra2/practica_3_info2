@@ -15,7 +15,7 @@ int main() {
 
     int opcion = validarEntrada("\nSeleccione una opcion: ");
 
-    int semilla = validarEntrada("Ingrese el tamaño de la semilla: ");
+    int semilla = validarEntrada("Ingrese el tamano de la semilla: ");
     int metodo  = validarEntrada("Ingrese el metodo (1 o 2): ");
 
     std::string archivoEntrada, archivoSalida;
@@ -46,19 +46,19 @@ int main() {
         std::getline(std::cin, archivoEntrada);
         if (archivoEntrada.empty()) archivoEntrada = "sudo.bin";
 
-        std::cout << "Archivo de salida (enter para 'sudo.txt'): ";
+        std::cout << "Archivo de salida (enter para 'resultado.txt'): ";
         std::getline(std::cin, archivoSalida);
-        if (archivoSalida.empty()) archivoSalida = "sudo.txt";
+        if (archivoSalida.empty()) archivoSalida = "resultado.txt";
 
-        decodificar(semilla, metodo, archivoEntrada, archivoSalida);
+        decodificar(semilla, metodo,archivoEntrada, archivoSalida);
     }
 
     else if (opcion == 3) {
-        identificarUsuario(semilla, metodo);
+        identificarUsuario(semilla, metodo, archivoSalida);
     }
 
     limpiarTemporales();
-    std::cout << "\nEjecución finalizada correctamente.\n";
+    std::cout << "\nEjecucion finalizada correctamente.\n";
     return 0;
 }
 
